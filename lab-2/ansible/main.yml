@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+
+  roles:
+    - { role: deploy_LB, when: "'LB_group' in group_names" }
+    - { role: deploy_BE, when: "'BE_group' in group_names" } 
+    - { role: deploy_DB, when: "'DB_group' in group_names" }

@@ -1,0 +1,20 @@
+<?php 
+
+# server name
+$sName = "{{ db_internal_ips[0] }}";
+# user name
+$uName = "{{ mysql_users[0].name }}";
+# password
+$pass = "{{ mysql_users[0].password }}";
+
+# database name
+$db_name = "{{ mysql_databases[0].name }}";
+
+#creating database connection
+try {
+    $conn = new PDO("mysql:host=$sName;dbname=$db_name", 
+                    $uName, $pass);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+}catch(PDOException $e){
+  echo "Connection failed : ". $e->getMessage();
+}

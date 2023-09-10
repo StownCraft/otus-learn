@@ -1,0 +1,11 @@
+mysql_databases:
+  - name: app
+    collation: utf8_general_ci
+    encoding: utf8
+    replicate: 1
+
+mysql_users:
+  - name: app
+    host: "%"
+    password: "78Iw3NaDDdF95vTT"
+    priv: "*.*:ALL"

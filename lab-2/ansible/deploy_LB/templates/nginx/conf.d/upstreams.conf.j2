@@ -1,0 +1,5 @@
+upstream backend {
+    {% for ip in be_internal_ips %}
+    server {{ ip }}:80 max_fails=10 fail_timeout=10s;
+    {% endfor %}
+}

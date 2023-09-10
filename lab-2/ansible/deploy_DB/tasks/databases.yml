@@ -1,0 +1,26 @@
+---
+- name: Ensure MySQL databases are present.
+  mysql_db:
+    name: "{{ item.name }}"
+    collation: "{{ item.collation | default('utf8_general_ci') }}"
+    encoding: "{{ item.encoding | default('utf8') }}"
+    state: "{{ item.state | default('present') }}"
+    target: "{{ item.target | default(omit) }}"
+  with_items: "{{ mysql_databases }}"
+  register: create_databases
+
+- name: Copy mysql db
+  copy:
+    src: "files/{{ item.item.name }}.sql"
+    dest: "/tmp"
+  when: item.changed == true
+  with_items: "{{ create_databases.results }}"
+
+- name: Import the database
+  mysql_db:
+    name: "{{ item.item.name }}"
+    state: import
+    target: "/tmp/{{ item.item.name }}.sql"
+  when: item.changed == true
+  with_items: "{{ create_databases.results }}"
+

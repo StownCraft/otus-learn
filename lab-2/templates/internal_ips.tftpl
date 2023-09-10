@@ -1,0 +1,3 @@
+---
+be_internal_ips: [%{ for backend in backends ~}"${ backend["instance_internal_ip_address"] }",%{ endfor ~}]
+db_internal_ips: [%{ for database in databases ~}"${ database["instance_internal_ip_address"] }",%{ endfor ~}]

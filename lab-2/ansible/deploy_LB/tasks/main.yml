@@ -1,0 +1,33 @@
+---
+- name: "Install nginx via apt"
+  apt:
+    name: "nginx"
+    state: "latest"
+    update_cache: true
+  
+- name: start nginx
+  service: 
+    name: nginx
+    state: started
+    enabled: yes
+    
+- name: Template nginx config files
+  template:
+    src: "nginx/{{ item }}.j2"
+    dest: "/etc/nginx/{{ item }}"
+  loop:
+    - conf.d/upstreams.conf
+    - sites-available/default
+  notify: reload nginx
+
+- name: Create a symbolic link
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  notify: reload nginx
+
+- name: start nginx
+  service: 
+    name: nginx
+    state: restarted

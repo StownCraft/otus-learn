@@ -1,0 +1,26 @@
+---
+- name: copy files
+  synchronize:
+    src: "files/"
+    dest: "/var/www/html/"
+    checksum: true
+    delete: true
+    rsync_opts:
+    - "--chown=www-data:www-data"
+    - "--chmod=F0750"
+    - "--chmod=D0750"
+
+- name: Template app config file
+  template:
+    src: "app/{{ item }}.j2"
+    dest: "/var/www/html/{{ item }}"
+  loop:
+    - app/db.conn.php
+
+  # copy:
+  #   src: "files/" 
+  #   dest: "/var/www/html/"
+  #   owner: nginx
+  #   group: nginx
+  #   remote_src: True
+  #   mode: 0644

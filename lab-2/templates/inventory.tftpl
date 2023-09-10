@@ -1,0 +1,14 @@
+[LB_group]
+%{ for loadbalancer in loadbalancers ~}
+${ loadbalancer["vm_name"] } ansible_host=${ loadbalancer["instance_external_ip_address"] }
+%{ endfor ~}
+
+[BE_group]
+%{ for backend in backends ~}
+${ backend["vm_name"] } ansible_host=${ backend["instance_external_ip_address"] }
+%{ endfor ~}
+
+[DB_group]
+%{ for database in databases ~}
+${ database["vm_name"] } ansible_host=${ database["instance_external_ip_address"] }
+%{ endfor ~}

@@ -1,0 +1,23 @@
+---
+- name: Install PHP-FPM
+  apt:
+    name:
+      - "php-fpm"
+      - "php-mysql"
+      - "php-bcmath"
+      - "php-ctype"
+      - "php-json"
+      - "php-mbstring"
+      - "php-pdo"
+      - "php-tokenizer"
+      - "php-xml"
+      - "php-curl"
+    state: latest
+    update_cache: yes
+  notify: reload php8.1-fpm
+    
+- name: Start php8.1-fpm service
+  service:
+    name: php8.1-fpm
+    state: started
+    enabled: yes

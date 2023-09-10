@@ -1,0 +1,7 @@
+---
+- name: Include nginx service
+  include_tasks: nginx.yml
+- name: Include php-fpm service
+  include_tasks: php-fpm.yml
+- name: Include deploy-app service
+  include_tasks: deploy-app.yml
