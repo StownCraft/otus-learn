@@ -1,0 +1,9 @@
+---
+- name: targetcli saveconfig
+  ansible.builtin.command: targetcli saveconfig
+
+- name: Start Nginx Service
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: yes
