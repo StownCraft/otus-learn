@@ -1,0 +1,15 @@
+---
+- name: reload nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
+
+- name: restart php-fpm debian
+  ansible.builtin.systemd:
+    name: "php{{ php_version }}-fpm"
+    state: restarted
+
+- name: restart php-fpm redhat
+  ansible.builtin.systemd:
+    name: php-fpm
+    state: restarted

@@ -1,0 +1,21 @@
+---
+# - name: Create the Vault repo file if OS is CentOS 7
+#   template:
+#     src: vault.repo.j2
+#     dest: /etc/yum.repos.d/vault.repo
+
+- name: Find CentOS repo files
+  find:
+    paths: /etc/yum.repos.d/
+    patterns: 'CentOS-*'
+  register: repo_files
+
+- name: Comment out mirrorlist
+  command: "sed -i 's/mirrorlist/#mirrorlist/g' {{ item.path }}"
+  loop: "{{ repo_files.files }}"
+  when: repo_files.matched > 0
+
+- name: Set baseurl to vault.centos.org
+  command: "sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' {{ item.path }}"
+  loop: "{{ repo_files.files }}"
+  when: repo_files.matched > 0

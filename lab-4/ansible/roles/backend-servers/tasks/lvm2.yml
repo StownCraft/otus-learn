@@ -1,0 +1,42 @@
+---
+- name: Create a volume groups
+  community.general.lvg:
+    vg: "{{ item.vg }}"
+    pvs: "{{ item.pv }}"
+    vg_options: "--shared"
+  with_items: 
+    - { vg: 'web_cluster_vg', pv: '/dev/mapper/webpath' }
+    # - { vg: 'fileio_cluster_vg', pv: '/dev/mapper/otusFileio' }
+    # - { vg: 'block_cluster_vg', pv: '/dev/mapper/otusBlock' }
+    # - { vg: 'ramdisk_cluster_vg', pv: '/dev/mapper/otusRamdisk' }
+  when: "ansible_hostname in 'backend-01'"
+
+- name: Wait a little
+  pause:
+    seconds: 5
+
+- name: start lock manager for shared
+  ansible.builtin.command: "vgchange --lockstart {{ item.vg }}"
+  with_items: 
+    - { vg: 'web_cluster_vg' }
+    # - { vg: 'fileio_cluster_vg' }
+    # - { vg: 'block_cluster_vg' }
+    # - { vg: 'ramdisk_cluster_vg' }
+  when: "ansible_hostname in ['backend-02']"
+
+- name: Create a logical volume the size of fileio
+  community.general.lvol:
+    vg: "{{ item.vg }}"
+    lv: "{{ item.lv }}"
+    size: "{{ item.size }}"
+    opts: --activate sy
+  with_items: 
+    # - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv', size: '100%FREE' }
+    # - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv', size: '100%FREE' }
+    # - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv', size: '100%FREE' }
+    - { vg: 'web_cluster_vg', lv: 'web_cluster_lv', size: '100%FREE' }
+  when: "ansible_hostname in 'backend-01'"
+
+- name: Wait a little
+  pause:
+    seconds: 5

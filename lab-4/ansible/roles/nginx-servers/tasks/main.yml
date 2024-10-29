@@ -1,0 +1,102 @@
+---
+- name: Debian OS
+  block:
+
+  - name: Install nginx Debian
+    ansible.builtin.apt:
+      name:
+        - nginx
+      state: latest
+      update_cache: yes
+
+  - name: Template nginx config files
+    ansible.builtin.template:
+      src: "nginx/{{ item }}.j2"
+      dest: "/etc/nginx/{{ item }}"
+    loop:
+      - conf.d/upstreams.conf
+
+  - name: Copy file /etc/nginx/sites-available/default to upstreams
+    ansible.builtin.copy:
+      src: /etc/nginx/sites-available/default
+      dest: /etc/nginx/sites-available/upstreams
+      remote_src: true
+
+  - name: Insert line proxy_pass to /etc/nginx/sites-available/upstreams
+    ansible.builtin.lineinfile:
+      path: /etc/nginx/sites-available/upstreams
+      insertafter: '^\tlocation / {\n'
+      line: '                proxy_pass http://@backend;'
+
+  - name: Comment out the line /etc/nginx/sites-available/upstreams
+    ansible.builtin.replace:
+      path: /etc/nginx/sites-available/upstreams
+      regexp: '^\t\t(.*try_files \$uri \$uri/ =404;.*)'
+      replace: '\t\t#\1'
+
+  - name: Create a symbolic default link to /etc/nginx/sites-available/upstreams
+    ansible.builtin.file:
+      src: /etc/nginx/sites-available/upstreams
+      dest: /etc/nginx/sites-enabled/default
+      state: link
+
+  when: ansible_os_family == "Debian"
+
+- name: Redhat OS
+  block:
+
+  - name: Install nginx RedHat
+    ansible.builtin.yum:
+      name:
+        - nginx
+      state: latest
+
+  - name: Install policycoreutils-python-utils
+    ansible.builtin.yum:
+      name:
+        - policycoreutils-python-utils
+      state: present
+
+  - name: Set httpd_can_network_relay flag on and keep it persistent across reboots
+    ansible.posix.seboolean:
+      name: httpd_can_network_relay
+      state: true
+      persistent: true
+
+  - name: Template nginx config files
+    ansible.builtin.template:
+      src: "nginx/{{ item }}.j2"
+      dest: "/etc/nginx/{{ item }}"
+    loop:
+      - conf.d/upstreams.conf
+      - nginx.conf
+
+  # - name: Insert line proxy_pass to /etc/nginx/nginx.conf
+  #   ansible.builtin.lineinfile:
+  #     path: /etc/nginx/nginx.conf
+  #     insertafter: '^        location / {'
+  #     line: "{{ item }}"
+  #   loop:
+  #     - '                proxy_connect_timeout 5;'
+  #     - '                proxy_set_header Host $host;'
+  #     - '                proxy_set_header X-Forwarded-For $remote_addr;'
+  #     - '                proxy_set_header X-Real-IP $remote_addr;'
+  #     - '                proxy_pass http://@backend;'
+  
+  # - name: Insert line proxy_pass to /etc/nginx/nginx.conf
+  #   ansible.builtin.lineinfile:
+  #     path: /etc/nginx/nginx.conf
+  #     insertbefore: '^        location / {'
+  #     line: "{{ item }}"
+  #   loop:
+  #     - "        location /ping {"
+  #     - "                return 200 'pong!';"
+  #     - "        }"
+  
+  when: ansible_os_family == "RedHat"
+
+- name: Start Nginx Service
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+    enabled: yes

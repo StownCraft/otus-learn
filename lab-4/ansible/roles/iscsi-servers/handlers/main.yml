@@ -1,0 +1,3 @@
+---
+- name: targetcli saveconfig
+  ansible.builtin.command: targetcli saveconfig
